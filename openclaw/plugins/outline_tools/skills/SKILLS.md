@@ -51,6 +51,12 @@ All operations are scoped to children of the configured `rootDoc`. This prevents
 
 ## Organizing documents
 
+- **Walk the existing hierarchy before creating.** When placing a document at a nested path (e.g. `rootDoc / A / B / C`), you MUST resolve each level of the path from the top down before creating anything:
+  1. Call `outline_root_info` to get the rootDoc's immediate children.
+  2. For each level of the target path, check if a document with that title already exists among the current parent's children (use `outline_documents_info` on the parent to see its children, or search by title).
+  3. If it exists, use its `id` as the `parentDocumentId` for the next level — do **not** create a duplicate.
+  4. Only create a document when you reach a level in the path that does **not** already exist.
+  5. Example: user says "create doc C under A / B". First check if A exists under rootDoc (it might). Then check if B exists under A (it might). Only then create C under the existing B. Never blindly recreate A and B.
 - **Keep the tree organized.** When a user asks for a document to be placed as a child of another document, use `outline_documents_create` with the `parentDocumentId` set to the target parent. If the document already exists and needs to be relocated, use `outline_documents_move` to re-parent it — do not recreate it.
 - **Use `outline_documents_move`** whenever a user wants to reorganize the hierarchy — e.g. "put X under Y", "move X into Y", "make X a child of Y". Look up both documents first (search or info), then move the child under the parent.
 - **Think about structure.** If a user is creating multiple related documents, group them logically — create a parent doc first if one doesn't exist, then nest the children under it rather than dumping everything flat under rootDoc.
@@ -60,7 +66,7 @@ All operations are scoped to children of the configured `rootDoc`. This prevents
 - **Never change a document's title** unless the user explicitly asks you to rename it. When using `outline_documents_update`, omit the `title` field to leave it unchanged. Changing titles without being asked is disruptive — the user chose that title deliberately.
 - **Always verify docs by name.** When a user references a document by name (e.g. "update the Design Notes doc"), use `outline_documents_search` to find it first. Do not guess the id or assume it exists — confirm it via search, then use the returned id. If no match is found, tell the user the document wasn't found rather than creating a new one silently.
 - **Prefer append over update** when adding new content to an existing doc. This avoids accidentally losing existing content.
-- **Search before create** to avoid duplicates. If a doc with the same title exists, update or append instead.
+- **Search before create** to avoid duplicates. If a doc with the same title already exists at the intended location, update or append instead. This applies to every level of a nested path — never recreate parent documents that already exist.
 - **Use datedHeading** when appending logs, notes, or daily entries so the doc stays organized.
 - **Keep docs human-readable**: use headings, bullets, and tables. Don't dump raw data.
 - When reporting results to the user, always cite the doc title and id.
