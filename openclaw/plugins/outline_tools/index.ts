@@ -26,20 +26,14 @@ type OutlineConfig = {
 };
 
 function getCfg(api: any): OutlineConfig {
-  // Debug: log top-level keys on api so we can find where config lives
-  console.log("[outline_tools] api keys:", Object.keys(api ?? {}));
-  console.log("[outline_tools] api.config:", JSON.stringify(api.config ?? null));
-  console.log("[outline_tools] api.pluginConfig:", JSON.stringify((api as any).pluginConfig ?? null));
-  console.log("[outline_tools] api.settings:", JSON.stringify((api as any).settings ?? null));
-
-  // Try multiple possible locations
-  const cfg = api.config ?? (api as any).pluginConfig ?? (api as any).settings ?? {};
+  // api.config is the full openclaw.json — plugin config lives nested inside it
+  const fullConfig = api.config ?? {};
+  const cfg = fullConfig?.plugins?.entries?.outline_tools?.config ?? {};
 
   if (!cfg.baseUrl || !cfg.apiToken) {
     throw new Error(
       "outline_tools plugin config is missing baseUrl or apiToken. " +
-      "Check plugins.entries.outline_tools.config in openclaw.json. " +
-      `Got keys: ${JSON.stringify(Object.keys(cfg))}`
+      "Check plugins.entries.outline_tools.config in openclaw.json."
     );
   }
   return {
