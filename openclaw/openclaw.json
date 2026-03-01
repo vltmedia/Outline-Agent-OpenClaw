@@ -41,7 +41,7 @@
   "skills": {
     "entries": {
       "outline_tools": {
-        "enabled": true,
+        "enabled": false,
         "config": {
           "baseUrl": "https://******",
           "apiToken": "ol_api_*****",
