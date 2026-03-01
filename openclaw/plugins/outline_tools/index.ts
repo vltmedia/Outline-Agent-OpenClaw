@@ -26,9 +26,21 @@ type OutlineConfig = {
 };
 
 function getCfg(api: any): OutlineConfig {
-  const cfg = api.config ?? {};
+  // Debug: log top-level keys on api so we can find where config lives
+  console.log("[outline_tools] api keys:", Object.keys(api ?? {}));
+  console.log("[outline_tools] api.config:", JSON.stringify(api.config ?? null));
+  console.log("[outline_tools] api.pluginConfig:", JSON.stringify((api as any).pluginConfig ?? null));
+  console.log("[outline_tools] api.settings:", JSON.stringify((api as any).settings ?? null));
+
+  // Try multiple possible locations
+  const cfg = api.config ?? (api as any).pluginConfig ?? (api as any).settings ?? {};
+
   if (!cfg.baseUrl || !cfg.apiToken) {
-    throw new Error("outline_tools plugin config is missing baseUrl or apiToken. Check plugins.entries.outline_tools.config in openclaw.json.");
+    throw new Error(
+      "outline_tools plugin config is missing baseUrl or apiToken. " +
+      "Check plugins.entries.outline_tools.config in openclaw.json. " +
+      `Got keys: ${JSON.stringify(Object.keys(cfg))}`
+    );
   }
   return {
     baseUrl: cfg.baseUrl,
@@ -90,7 +102,7 @@ async function isDescendantOfRoot(api: any, docId: string, rootDocId: string): P
   return false;
 }
 
-async function guardDescendant(api: any, docId: string, label: string): Promise<string | null> {
+async function guardDescendant(api: any, docId: string, _label?: string): Promise<string | null> {
   const root = await resolveRootDoc(api);
   const ok = await isDescendantOfRoot(api, docId, root.id);
   if (!ok) {
@@ -521,7 +533,7 @@ export default function register(api: any) {
       const body: Record<string, any> = { id: params.id };
       if (params.permanent != null) body.permanent = params.permanent;
 
-      const result = await outlinePost(api, "documents.delete", body);
+      await outlinePost(api, "documents.delete", body);
       return textResult(JSON.stringify({ deleted: true, id: params.id, permanent: params.permanent ?? false }, null, 2));
     },
   });
