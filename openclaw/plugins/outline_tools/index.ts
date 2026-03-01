@@ -69,7 +69,7 @@ async function resolveRootDoc(api: any): Promise<RootDocInfo> {
     id: doc.id,
     collectionId: doc.collectionId,
     title: doc.title,
-    url: doc.url,
+    url: rewriteUrl(api, doc.url) ?? doc.url,
   };
   return _cachedRootDoc;
 }
@@ -150,6 +150,14 @@ async function outlinePost(api: any, endpoint: string, body: any) {
   return json;
 }
 
+function rewriteUrl(api: any, url: string | undefined): string | undefined {
+  if (!url) return url;
+  const cfg = getCfg(api);
+  const base = cfg.baseUrl.replace(/\/+$/, "");
+  // Replace whatever domain the API returned with the configured baseUrl
+  return url.replace(/^https?:\/\/[^/]+/, base);
+}
+
 function mdAppend(existing: string, toAppend: string, datedHeading?: string) {
   const safeExisting = (existing ?? "").trimEnd();
   const safeAppend = (toAppend ?? "").trim();
@@ -186,7 +194,7 @@ export default function register(api: any) {
       const children = childDocs.map((d: any) => ({
         id: d.id,
         title: d.title,
-        url: d.url,
+        url: rewriteUrl(api, d.url),
         updatedAt: d.updatedAt,
       }));
 
@@ -230,7 +238,7 @@ export default function register(api: any) {
       const compact = docs.slice(0, limit).map((d) => ({
         id: d.id,
         title: d.title,
-        url: d.url,
+        url: rewriteUrl(api, d.url),
         updatedAt: d.updatedAt,
         publishedAt: d.publishedAt,
         collection: d.collection ? { id: d.collection.id, name: d.collection.name } : undefined,
@@ -257,7 +265,7 @@ export default function register(api: any) {
       const payload = {
         id: doc?.id,
         title: doc?.title,
-        url: doc?.url,
+        url: rewriteUrl(api, doc?.url),
         collection: doc?.collection ? { id: doc.collection.id, name: doc.collection.name } : undefined,
         text: doc?.text,
         updatedAt: doc?.updatedAt,
@@ -301,7 +309,7 @@ export default function register(api: any) {
         publish: params.publish ?? true,
       });
       const doc = result?.data ?? result;
-      return textResult(JSON.stringify({ created: true, id: doc?.id, title: doc?.title, url: doc?.url }, null, 2));
+      return textResult(JSON.stringify({ created: true, id: doc?.id, title: doc?.title, url: rewriteUrl(api, doc?.url) }, null, 2));
     },
   });
 
@@ -331,7 +339,7 @@ export default function register(api: any) {
         publish: params.publish ?? true,
       });
       const doc = result?.data ?? result;
-      return textResult(JSON.stringify({ updated: true, id: doc?.id, title: doc?.title, url: doc?.url }, null, 2));
+      return textResult(JSON.stringify({ updated: true, id: doc?.id, title: doc?.title, url: rewriteUrl(api, doc?.url) }, null, 2));
     },
   });
 
@@ -365,7 +373,7 @@ export default function register(api: any) {
       });
 
       const out = updated?.data ?? updated;
-      return textResult(JSON.stringify({ appended: true, id: out?.id, title: out?.title, url: out?.url }, null, 2));
+      return textResult(JSON.stringify({ appended: true, id: out?.id, title: out?.title, url: rewriteUrl(api, out?.url) }, null, 2));
     },
   });
 
@@ -413,7 +421,7 @@ export default function register(api: any) {
       const result = await outlinePost(api, "documents.move", body);
       const doc = result?.data ?? result;
       const wasPublished = !existing?.publishedAt;
-      return textResult(JSON.stringify({ moved: true, autoPublished: wasPublished, id: doc?.id, title: doc?.title, url: doc?.url }, null, 2));
+      return textResult(JSON.stringify({ moved: true, autoPublished: wasPublished, id: doc?.id, title: doc?.title, url: rewriteUrl(api, doc?.url) }, null, 2));
     },
   });
 
@@ -453,7 +461,7 @@ export default function register(api: any) {
 
       const result = await outlinePost(api, "documents.duplicate", body);
       const doc = result?.data ?? result;
-      return textResult(JSON.stringify({ duplicated: true, id: doc?.id, title: doc?.title, url: doc?.url }, null, 2));
+      return textResult(JSON.stringify({ duplicated: true, id: doc?.id, title: doc?.title, url: rewriteUrl(api, doc?.url) }, null, 2));
     },
   });
 
@@ -503,7 +511,7 @@ export default function register(api: any) {
 
       const result = await outlinePost(api, "documents.restore", body);
       const doc = result?.data ?? result;
-      return textResult(JSON.stringify({ restored: true, id: doc?.id, title: doc?.title, url: doc?.url }, null, 2));
+      return textResult(JSON.stringify({ restored: true, id: doc?.id, title: doc?.title, url: rewriteUrl(api, doc?.url) }, null, 2));
     },
   });
 
