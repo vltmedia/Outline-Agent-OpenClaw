@@ -1,7 +1,7 @@
 ---
 name: outline_agent
 description: Agent skill for managing Outline wiki documents on behalf of the user.
-metadata: {"openclaw":{"emoji":"📓","requires":{"plugins":["outline_tools"]},"triggers":["write a doc","create a doc","new doc","new page","make a doc","draft a doc","start a doc","update the doc","edit the doc","change the doc","rewrite the doc","add to the doc","append to the doc","find a doc","search docs","look up a doc","look for a doc","search the wiki","check the wiki","read the doc","show me the doc","open the doc","what's in the doc","move the doc","organize docs","put this under","nest under","reparent","delete the doc","remove the doc","trash the doc","archive the doc","restore the doc","duplicate the doc","copy the doc","rename the doc","wiki","outline","document","docs","notes","knowledge base","write up","write it up","jot this down","take notes","save this","log this","record this"]}}
+metadata: {"openclaw":{"emoji":"📓","requires":{"plugins":["outline_tools"]},"triggers":["write a doc","create a doc","new doc","new page","make a doc","draft a doc","start a doc","update the doc","edit the doc","change the doc","rewrite the doc","add to the doc","append to the doc","find a doc","search docs","look up a doc","look for a doc","search the wiki","check the wiki","read the doc","show me the doc","open the doc","what's in the doc","move the doc","organize docs","put this under","nest under","reparent","delete the doc","remove the doc","trash the doc","archive the doc","restore the doc","duplicate the doc","copy the doc","rename the doc","wiki","outline","document","docs","notes","knowledge base","write up","write it up","jot this down","take notes","save this","log this","record this","go to this site","check this link","read this url","fetch this page","grab from","pull from","scrape this","summarize this link","what's on this page","look up online","research this","save this link","get the page"]}}
 ---
 
 # Outline Agent
@@ -26,6 +26,10 @@ When the user says something casual, map it to the right tool:
 | "restore", "unarchive", "bring back", "recover" | Restore a document | `outline_documents_restore` |
 | "rename", "change the title", "retitle" | Update only the title | `outline_documents_update` (with `title`, keep `text` unchanged) |
 | "what do we have", "show the tree", "list docs", "what's in the wiki" | Show root doc and children | `outline_root_info` |
+| "go to", "fetch", "grab from", "pull from", "check this link", "read this url" | Fetch a webpage | `web_fetch` |
+| "look up online", "google", "search the web", "what does this site say" | Fetch a webpage | `web_fetch` |
+| "scrape", "get the page", "what's on this page", "summarize this link" | Fetch and summarize a webpage | `web_fetch` |
+| "research this", "look this up", "find info on" | Fetch a URL if provided, otherwise search docs | `web_fetch` or `outline_documents_search` |
 
 When in doubt about intent, prefer the safer action (append over update, search before create).
 
@@ -63,7 +67,30 @@ When a conversation starts or the user asks you to do anything with docs:
 - **Create documents** — write new docs with markdown content. They auto-nest under the root document.
 - **Update documents** — replace or append content to existing docs.
 - **Organize documents** — move, nest, duplicate, archive, restore, and delete docs within the root tree.
+- **Fetch web pages** — visit URLs and extract information using `web_fetch`.
 - **Answer questions** — read docs and summarize or extract information the user asks about.
+
+## Fetching Web Content
+
+Use the `web_fetch` tool when the user asks you to visit a website, read a URL, or pull information from the web.
+
+### When to use it
+- The user shares a URL and asks you to read, summarize, or extract info from it
+- The user says "go to", "check this link", "what's on this page", "grab from this site", etc.
+- The user asks you to research something and provides a link
+- The user wants web content saved into an Outline doc (fetch first, then create/append)
+
+### How to use it
+- Pass the URL to `web_fetch` — it will return the page content
+- Summarize or extract the relevant parts for the user
+- If the user wants the content saved, create or append to an Outline doc with the formatted result
+- Always format web content cleanly before saving — use headings, bullets, and quotes. Don't paste raw HTML.
+
+### Combining with Outline
+A common pattern: the user shares a link and says "save this to the wiki" or "add this to my notes." In that case:
+1. Fetch the page with `web_fetch`
+2. Extract and format the relevant content
+3. Create a new doc or append to an existing one using the Outline tools
 
 ## Rules
 
