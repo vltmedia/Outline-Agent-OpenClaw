@@ -4,8 +4,9 @@
  *
  * Configure in openclaw.json:
  * plugins.entries["outline_tools"].config = {
- *   baseUrl: "https://claw-outlined.vltcool.com",
+ *   baseUrl: "https://...",
  *   apiToken: "....",
+ *   rootDoc: "https://.../doc/...",
  *   cfAccessClientId?: "...",
  *   cfAccessClientSecret?: "..."
  * }
@@ -24,11 +25,17 @@ type OutlineConfig = {
   cfAccessClientSecret?: string;
 };
 
-function getCfg(_api: any): OutlineConfig {
+function getCfg(api: any): OutlineConfig {
+  const cfg = api.config ?? {};
+  if (!cfg.baseUrl || !cfg.apiToken) {
+    throw new Error("outline_tools plugin config is missing baseUrl or apiToken. Check plugins.entries.outline_tools.config in openclaw.json.");
+  }
   return {
-    baseUrl: "https://claw-outlined.vltcool.com",
-    apiToken: "ol_api_Ewyp2lLfFyDt9WhyOlhCXFKqjTFy5tA7UYuP7J",
-    rootDoc: "",
+    baseUrl: cfg.baseUrl,
+    apiToken: cfg.apiToken,
+    rootDoc: cfg.rootDoc ?? "",
+    cfAccessClientId: cfg.cfAccessClientId,
+    cfAccessClientSecret: cfg.cfAccessClientSecret,
   };
 }
 
