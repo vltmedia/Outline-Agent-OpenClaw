@@ -1,0 +1,22 @@
+{
+  "id": "outline_tools",
+  "name": "Outline Tools",
+  "description": "Agent tools for reading and writing Outline via the Outline API.",
+  "main": "./index.js",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "baseUrl": { "type": "string", "description": "Outline base URL (https://...)" },
+      "apiToken": { "type": "string", "description": "Outline API token (Bearer)" },
+      "rootDoc": { "type": "string", "description": "Outline Doc to do all the work under" }
+    },
+    "required": ["baseUrl", "apiToken","rootDoc"]
+  },
+  "uiHints": {
+    "plugins.entries.outline_tools.config.apiToken": {
+      "label": "Outline API token",
+      "sensitive": true
+    }
+  }
+}
