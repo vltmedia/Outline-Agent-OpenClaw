@@ -52,8 +52,6 @@ async function resolveRootDoc(api: any): Promise<RootDocInfo> {
   if (_cachedRootDoc) return _cachedRootDoc;
 
   const cfg = getCfg(api);
-  console.log("HEYYY");
-  console.log(cfg);
   if (!cfg.rootDoc) throw new Error("rootDoc is not configured. Set it in the plugin config.");
 
   // Extract urlId from URL: everything after /doc/
